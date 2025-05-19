@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+
+{% block head_title %}Transaction Report{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet" />
+<script>
+    $(document).ready(function () {
+        // Initialize date range picker on the input field
+        $('input[name="daterange"]').daterangepicker({
+            opens: 'left', // Adjust the opening direction of the calendar
+            autoApply: true, // Automatically apply the selected date range
+            locale: {
+                format: 'YYYY-MM-DD', // Date format
+                cancelLabel: 'Clear', // Label for clearing the date range
+            }
+        });
+
+        // Listen for changes in the date range selection
+        $('input[name="daterange"]').on('apply.daterangepicker', function (ev, picker) {
+            // Submit the form when date range is applied
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto">
+    <h1 class="font-bold text-3xl text-center py-8">Full Transactional Report</h1>
+    <form method="get" class="max-w-lg mx-auto mb-8">
+        <div class="relative mt-4">
+            <input type="text" name="daterange" id="search" placeholder="Select Date Range"
+                value="{{ request.GET.daterange }}"
+                class="block w-full border border-gray-300 rounded-md py-2 px-3 placeholder-gray-400 text-gray-900 focus:outline-none focus:border-blue-400 focus:ring-blue-400" />
+        </div>
+        {% if form.daterange.errors %}
+        {% for error in form.daterange.errors %}
+        <p class="text-red-600 text-sm italic">{{ error }}</p>
+        {% endfor %}
+        {% endif %}
+    </form>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg overflow-hidden">
+            <thead class="bg-blue-800 text-white">
+                <tr class="uppercase font-semibold text-sm">
+                    <th class="py-2 px-3 text-left">Transaction</th>
+                    <th class="py-2 px-3 text-left">Date and Time</th>
+                    <th class="py-2 px-3 text-left">Amount (KSh)</th>
+                    <th class="py-2 px-3 text-left">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in object_list %}
+                <tr class="{% cycle 'bg-yellow-300' 'bg-gray-100' %}">
+                    <td class="py-2 px-3 text-left">{{ transaction.get_transaction_type_display }}</td>
+                    <td class="py-2 px-3 text-left">{{ transaction.timestamp }}</td>
+                    <td class="py-2 px-3 text-left">KSh {{ transaction.amount }}</td>
+                    <td class="py-2 px-3 text-left">KSh {{ transaction.balance_after_transaction }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="bg-green-600 text-white">
+                    <td class="py-2 px-3 text-right" colspan="3">Outstanding Account Balance</td>
+                    <td class="py-2 px-3 text-left">KSh {{ account.balance }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
